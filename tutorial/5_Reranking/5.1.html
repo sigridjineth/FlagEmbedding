@@ -1,0 +1,923 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" /><link rel="next" title="6. RAG" href="../6_RAG.html" /><link rel="prev" title="5. Reranking" href="../5_Reranking.html" />
+
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
+        <title>Reranker - FlagEmbedding</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  --color-brand-primary: #238be8;
+  --color-brand-content: #238be8;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #FBCB67;
+  --color-brand-content: #FBCB67;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #FBCB67;
+  --color-brand-content: #FBCB67;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">FlagEmbedding</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  
+  <span class="sidebar-brand-text">FlagEmbedding</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../index.html">Home</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Introduction</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../Introduction/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../Introduction/quick_start.html">Quick Start</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../API/abc.html">Abstract Class</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Abstract Class</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/abc/inference.html">Inference</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Inference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/abc/inference/AbsEmbedder.html">AbsEmbedder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/abc/inference/AbsReranker.html">AbsReranker</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/abc/finetune.html">Finetune</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Finetune</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../API/abc/finetune/embedder.html">Embedder</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Embedder</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/embedder/AbsArguments.html">AbsArguments</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/embedder/AbsDataset.html">AbsDataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/embedder/AbsModeling.html">AbsModeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/embedder/AbsTrainer.html">AbsTrainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/embedder/AbsRunner.html">AbsRunner</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../API/abc/finetune/reranker.html">Reranker</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Reranker</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/reranker/AbsArguments.html">AbsArguments</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/reranker/AbsDataset.html">AbsDataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/reranker/AbsModeling.html">AbsModeling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/reranker/AbsTrainer.html">AbsTrainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../API/abc/finetune/reranker/AbsRunner.html">AbsRunner</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../API/inference.html">Inference</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of Inference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../API/inference/FlagAutoModel.html">FlagAutoModel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../API/inference/FlagAutoReranker.html">FlagAutoReranker</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/inference/embedder/embedder.html">Embedder</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of Embedder</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/inference/embedder/encoder_only/BaseEmbedder.html">BaseEmbedder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/inference/embedder/encoder_only/M3Embedder.html">M3Embedder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/inference/embedder/decoder_only/BaseLLMEmbedder.html">BaseEmbedder</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/inference/embedder/decoder_only/ICLLLMEmbedder.html">ICLLLMEmbedder</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/inference/reranker/reranker.html">Reranker</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of Reranker</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/inference/reranker/encoder_only/BaseReranker.html">BaseReranker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/inference/reranker/decoder_only/BaseLLMReranker.html">BaseLLMReranker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/inference/reranker/decoder_only/LayerWiseLLMReranker.html">LayerWiseLLMReranker</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/inference/reranker/decoder_only/LightweightLLMReranker.html">LightweightLLMReranker</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../API/evaluation.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Evaluation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/evaluation/mteb.html">MTEB</a><input class="toctree-checkbox" id="toctree-checkbox-10" name="toctree-checkbox-10" role="switch" type="checkbox"/><label for="toctree-checkbox-10"><div class="visually-hidden">Toggle navigation of MTEB</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/mteb/arguments.html">arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/mteb/searcher.html">searcher</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/mteb/runner.html">runner</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/evaluation/airbench.html">AIR-Bench</a><input class="toctree-checkbox" id="toctree-checkbox-11" name="toctree-checkbox-11" role="switch" type="checkbox"/><label for="toctree-checkbox-11"><div class="visually-hidden">Toggle navigation of AIR-Bench</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/airbench/arguments.html">arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/airbench/runner.html">runner</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/evaluation/msmarco.html">MSMARCO</a><input class="toctree-checkbox" id="toctree-checkbox-12" name="toctree-checkbox-12" role="switch" type="checkbox"/><label for="toctree-checkbox-12"><div class="visually-hidden">Toggle navigation of MSMARCO</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/msmarco/data_loader.html">data_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/msmarco/runner.html">runner</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/evaluation/beir.html">BEIR</a><input class="toctree-checkbox" id="toctree-checkbox-13" name="toctree-checkbox-13" role="switch" type="checkbox"/><label for="toctree-checkbox-13"><div class="visually-hidden">Toggle navigation of BEIR</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/beir/arguments.html">arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/beir/data_loader.html">data loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/beir/evaluator.html">evaluator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/beir/runner.html">runner</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/evaluation/miracl.html">MIRACL</a><input class="toctree-checkbox" id="toctree-checkbox-14" name="toctree-checkbox-14" role="switch" type="checkbox"/><label for="toctree-checkbox-14"><div class="visually-hidden">Toggle navigation of MIRACL</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/miracl/data_loader.html">data_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/miracl/runner.html">runner</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/evaluation/mkqa.html">MKQA</a><input class="toctree-checkbox" id="toctree-checkbox-15" name="toctree-checkbox-15" role="switch" type="checkbox"/><label for="toctree-checkbox-15"><div class="visually-hidden">Toggle navigation of MKQA</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/mkqa/data_loader.html">data_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/mkqa/evaluator.html">evaluator</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/mkqa/runner.html">runner</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/evaluation/mldr.html">MLDR</a><input class="toctree-checkbox" id="toctree-checkbox-16" name="toctree-checkbox-16" role="switch" type="checkbox"/><label for="toctree-checkbox-16"><div class="visually-hidden">Toggle navigation of MLDR</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/mldr/data_loader.html">data_loader</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../API/evaluation/mldr/runner.html">runner</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../API/finetune.html">Finetune</a><input class="toctree-checkbox" id="toctree-checkbox-17" name="toctree-checkbox-17" role="switch" type="checkbox"/><label for="toctree-checkbox-17"><div class="visually-hidden">Toggle navigation of Finetune</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/finetune/embedder.html">Embedder</a><input class="toctree-checkbox" id="toctree-checkbox-18" name="toctree-checkbox-18" role="switch" type="checkbox"/><label for="toctree-checkbox-18"><div class="visually-hidden">Toggle navigation of Embedder</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../API/finetune/embedder/encoder_only.html">Encoder Only</a><input class="toctree-checkbox" id="toctree-checkbox-19" name="toctree-checkbox-19" role="switch" type="checkbox"/><label for="toctree-checkbox-19"><div class="visually-hidden">Toggle navigation of Encoder Only</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/base.html">Base</a><input class="toctree-checkbox" id="toctree-checkbox-20" name="toctree-checkbox-20" role="switch" type="checkbox"/><label for="toctree-checkbox-20"><div class="visually-hidden">Toggle navigation of Base</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/base/modeling.html">Modeling</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/base/runner.html">Runner</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/base/trainer.html">Trainer</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/m3.html">M3</a><input class="toctree-checkbox" id="toctree-checkbox-21" name="toctree-checkbox-21" role="switch" type="checkbox"/><label for="toctree-checkbox-21"><div class="visually-hidden">Toggle navigation of M3</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/m3/arguments.html">Arguments</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/m3/modeling.html">Modeling</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/m3/runner.html">Runner</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/encoder_only/m3/trainer.html">Trainer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../API/finetune/embedder/decoder_only.html">Decoder Only</a><input class="toctree-checkbox" id="toctree-checkbox-22" name="toctree-checkbox-22" role="switch" type="checkbox"/><label for="toctree-checkbox-22"><div class="visually-hidden">Toggle navigation of Decoder Only</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/base.html">Base</a><input class="toctree-checkbox" id="toctree-checkbox-23" name="toctree-checkbox-23" role="switch" type="checkbox"/><label for="toctree-checkbox-23"><div class="visually-hidden">Toggle navigation of Base</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/base/arguments.html">Arguments</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/base/modeling.html">Modeling</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/base/runner.html">Runner</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/base/trainer.html">Trainer</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/icl.html">ICL</a><input class="toctree-checkbox" id="toctree-checkbox-24" name="toctree-checkbox-24" role="switch" type="checkbox"/><label for="toctree-checkbox-24"><div class="visually-hidden">Toggle navigation of ICL</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/icl/arguments.html">Arguments</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/icl/dataset.html">Dataset</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/icl/modeling.html">Modeling</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/icl/runner.html">Runner</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/embedder/decoder_only/icl/trainer.html">Trainer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../API/finetune/reranker.html">Reranker</a><input class="toctree-checkbox" id="toctree-checkbox-25" name="toctree-checkbox-25" role="switch" type="checkbox"/><label for="toctree-checkbox-25"><div class="visually-hidden">Toggle navigation of Reranker</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../API/finetune/reranker/encoder_only.html">Encoder Only</a><input class="toctree-checkbox" id="toctree-checkbox-26" name="toctree-checkbox-26" role="switch" type="checkbox"/><label for="toctree-checkbox-26"><div class="visually-hidden">Toggle navigation of Encoder Only</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../API/finetune/reranker/encoder_only/base.html">Base</a><input class="toctree-checkbox" id="toctree-checkbox-27" name="toctree-checkbox-27" role="switch" type="checkbox"/><label for="toctree-checkbox-27"><div class="visually-hidden">Toggle navigation of Base</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/encoder_only/base/modeling.html">Modeling</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/encoder_only/base/runner.html">Runner</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/encoder_only/base/trainer.html">Trainer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../API/finetune/reranker/decoder_only.html">Decoder Only</a><input class="toctree-checkbox" id="toctree-checkbox-28" name="toctree-checkbox-28" role="switch" type="checkbox"/><label for="toctree-checkbox-28"><div class="visually-hidden">Toggle navigation of Decoder Only</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/base.html">Base</a><input class="toctree-checkbox" id="toctree-checkbox-29" name="toctree-checkbox-29" role="switch" type="checkbox"/><label for="toctree-checkbox-29"><div class="visually-hidden">Toggle navigation of Base</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/base/arguments.html">Arguments</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/base/modeling.html">Modeling</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/base/runner.html">Runner</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/base/trainer.html">Trainer</a></li>
+</ul>
+</li>
+<li class="toctree-l4 has-children"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/layerwise.html">Layerwise</a><input class="toctree-checkbox" id="toctree-checkbox-30" name="toctree-checkbox-30" role="switch" type="checkbox"/><label for="toctree-checkbox-30"><div class="visually-hidden">Toggle navigation of Layerwise</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/layerwise/arguments.html">Arguments</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/layerwise/modeling.html">Modeling</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/layerwise/runner.html">Runner</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../API/finetune/reranker/decoder_only/layerwise/trainer.html">Trainer</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
+<ul class="current">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../1_Embedding.html">1. Embedding</a><input class="toctree-checkbox" id="toctree-checkbox-31" name="toctree-checkbox-31" role="switch" type="checkbox"/><label for="toctree-checkbox-31"><div class="visually-hidden">Toggle navigation of 1. Embedding</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../1_Embedding/1.1.1.html">Intro to Embedding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1_Embedding/1.2.1.html">BGE Series</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1_Embedding/1.2.2.html">BGE Explanation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../1_Embedding/1.2.3.html">BGE-M3</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../2_Metrics.html">2. Metrics</a><input class="toctree-checkbox" id="toctree-checkbox-32" name="toctree-checkbox-32" role="switch" type="checkbox"/><label for="toctree-checkbox-32"><div class="visually-hidden">Toggle navigation of 2. Metrics</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../2_Metrics/2.1.html">Similarity</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../2_Metrics/2.2.html">Evaluation Metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../3_Indexing.html">3. Indexing</a><input class="toctree-checkbox" id="toctree-checkbox-33" name="toctree-checkbox-33" role="switch" type="checkbox"/><label for="toctree-checkbox-33"><div class="visually-hidden">Toggle navigation of 3. Indexing</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../3_Indexing/3.1.1.html">Indexing Using Faiss</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../3_Indexing/3.1.2.html">Faiss GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../3_Indexing/3.1.3.html">Faiss Indexes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../3_Indexing/3.1.4.html">Faiss Quantizers</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../3_Indexing/3.1.5.html">Choosing Index</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../4_Evaluation.html">4. Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-34" name="toctree-checkbox-34" role="switch" type="checkbox"/><label for="toctree-checkbox-34"><div class="visually-hidden">Toggle navigation of 4. Evaluation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../4_Evaluation/4.1.1.html">Evaluation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../4_Evaluation/4.2.1.html">MTEB</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../4_Evaluation/4.2.2.html">MTEB Leaderboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../4_Evaluation/4.3.1.html">C-MTEB</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="../5_Reranking.html">5. Reranking</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-35" name="toctree-checkbox-35" role="switch" type="checkbox"/><label for="toctree-checkbox-35"><div class="visually-hidden">Toggle navigation of 5. Reranking</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Reranker</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../6_RAG.html">6. RAG</a><input class="toctree-checkbox" id="toctree-checkbox-36" name="toctree-checkbox-36" role="switch" type="checkbox"/><label for="toctree-checkbox-36"><div class="visually-hidden">Toggle navigation of 6. RAG</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../6_RAG/6.1.html">Simple RAG From Scratch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../6_RAG/6.2.html">RAG with LangChain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../6_RAG/6.3.html">RAG with LlamaIndex</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../../_sources/tutorial/5_Reranking/5.1.ipynb.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="reranker">
+<h1>Reranker<a class="headerlink" href="#reranker" title="Link to this heading">¶</a></h1>
+<p>Reranker is disigned in cross-encoder architecture that takes the query and text at the same time and directly output their score of similarity. It is more capable on scoring the query-text relevance, but with the tradeoff of slower speed. Thus, complete retrieval system usually contains retrievers in the first stage to do a large scope retrieval, and then follows by rerankers to rerank the results more precisely.</p>
+<p>In this tutorial, we will go through text retrieval pipeline with reranker and evaluate the results before and after reranking.</p>
+<p>Note: Step 1-4 are identical to the tutorial of <a class="reference external" href="https://github.com/FlagOpen/FlagEmbedding/tree/master/Tutorials/4_Evaluation">evaluation</a>. We suggest to first go through that if you are not familiar with retrieval.</p>
+<section id="setup">
+<h2>0. Setup<a class="headerlink" href="#setup" title="Link to this heading">¶</a></h2>
+<p>Install the dependencies in the environment.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="k">pip</span> install -U FlagEmbedding faiss-cpu
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="dataset">
+<h2>1. Dataset<a class="headerlink" href="#dataset" title="Link to this heading">¶</a></h2>
+<p>Download and preprocess the MS Marco dataset</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">datasets</span> <span class="kn">import</span> <span class="n">load_dataset</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">load_dataset</span><span class="p">(</span><span class="s2">&quot;namespace-Pt/msmarco&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="s2">&quot;dev&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">queries</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">[:</span><span class="mi">100</span><span class="p">][</span><span class="s2">&quot;query&quot;</span><span class="p">])</span>
+<span class="n">corpus</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">data</span><span class="p">[:</span><span class="mi">5000</span><span class="p">][</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span> <span class="p">[])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="embedding">
+<h2>2. Embedding<a class="headerlink" href="#embedding" title="Link to this heading">¶</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">FlagEmbedding</span> <span class="kn">import</span> <span class="n">FlagModel</span>
+
+<span class="c1"># get the BGE embedding model</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">FlagModel</span><span class="p">(</span><span class="s1">&#39;BAAI/bge-base-en-v1.5&#39;</span><span class="p">,</span>
+                  <span class="n">query_instruction_for_retrieval</span><span class="o">=</span><span class="s2">&quot;Represent this sentence for searching relevant passages:&quot;</span><span class="p">,</span>
+                  <span class="n">use_fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># get the embedding of the corpus</span>
+<span class="n">corpus_embeddings</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">corpus</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;shape of the corpus embeddings:&quot;</span><span class="p">,</span> <span class="n">corpus_embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;data type of the embeddings: &quot;</span><span class="p">,</span> <span class="n">corpus_embeddings</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Inference Embeddings: 100%|██████████| 21/21 [01:59&lt;00:00,  5.68s/it]
+</pre></div>
+</div>
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>shape of the corpus embeddings: (5331, 768)
+data type of the embeddings:  float32
+</pre></div>
+</div>
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="indexing">
+<h2>3. Indexing<a class="headerlink" href="#indexing" title="Link to this heading">¶</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">faiss</span>
+
+<span class="c1"># get the length of our embedding vectors, vectors by bge-base-en-v1.5 have length 768</span>
+<span class="n">dim</span> <span class="o">=</span> <span class="n">corpus_embeddings</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># create the faiss index and store the corpus embeddings into the vector space</span>
+<span class="n">index</span> <span class="o">=</span> <span class="n">faiss</span><span class="o">.</span><span class="n">index_factory</span><span class="p">(</span><span class="n">dim</span><span class="p">,</span> <span class="s1">&#39;Flat&#39;</span><span class="p">,</span> <span class="n">faiss</span><span class="o">.</span><span class="n">METRIC_INNER_PRODUCT</span><span class="p">)</span>
+<span class="n">corpus_embeddings</span> <span class="o">=</span> <span class="n">corpus_embeddings</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">corpus_embeddings</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">corpus_embeddings</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;total number of vectors: </span><span class="si">{</span><span class="n">index</span><span class="o">.</span><span class="n">ntotal</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>total number of vectors: 5331
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="retrieval">
+<h2>4. Retrieval<a class="headerlink" href="#retrieval" title="Link to this heading">¶</a></h2>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">query_embeddings</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">encode_queries</span><span class="p">(</span><span class="n">queries</span><span class="p">)</span>
+<span class="n">ground_truths</span> <span class="o">=</span> <span class="p">[</span><span class="n">d</span><span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">]</span> <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+<span class="n">corpus</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">corpus</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
+
+<span class="n">res_scores</span><span class="p">,</span> <span class="n">res_ids</span><span class="p">,</span> <span class="n">res_text</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="n">query_size</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">query_embeddings</span><span class="p">)</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="c1"># The cutoffs we will use during evaluation, and set k to be the maximum of the cutoffs.</span>
+<span class="n">cut_offs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">]</span>
+<span class="n">k</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">cut_offs</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">query_size</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s2">&quot;Searching&quot;</span><span class="p">):</span>
+    <span class="n">q_embedding</span> <span class="o">=</span> <span class="n">query_embeddings</span><span class="p">[</span><span class="n">i</span><span class="p">:</span> <span class="nb">min</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">query_size</span><span class="p">)]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+    <span class="c1"># search the top k answers for each of the queries</span>
+    <span class="n">score</span><span class="p">,</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">q_embedding</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">k</span><span class="p">)</span>
+    <span class="n">res_scores</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">score</span><span class="p">)</span>
+    <span class="n">res_ids</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">idx</span><span class="p">)</span>
+    <span class="n">res_text</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">corpus</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Searching: 100%|██████████| 1/1 [00:00&lt;00:00, 22.35it/s]
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="reranking">
+<h2>5. Reranking<a class="headerlink" href="#reranking" title="Link to this heading">¶</a></h2>
+<p>Now we will use a reranker to rerank the list of answers we retrieved using our index. Hopefully, this will lead to better results.</p>
+<p>The following table lists the available BGE rerankers. Feel free to try out to see their differences!</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head text-left"><p>Model</p></th>
+<th class="head text-center"><p>Language</p></th>
+<th class="head text-center"><p>Parameters</p></th>
+<th class="head text-center"><p>Description</p></th>
+<th class="head text-center"><p>Base Model</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td class="text-left"><p><a class="reference external" href="https://huggingface.co/BAAI/bge-reranker-v2-m3">BAAI/bge-reranker-v2-m3</a></p></td>
+<td class="text-center"><p>Multilingual</p></td>
+<td class="text-center"><p>568M</p></td>
+<td class="text-center"><p>a lightweight cross-encoder model, possesses strong multilingual capabilities, easy to deploy, with fast inference.</p></td>
+<td class="text-center"><p>XLM-RoBERTa-Large</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><a class="reference external" href="https://huggingface.co/BAAI/bge-reranker-v2-gemma">BAAI/bge-reranker-v2-gemma</a></p></td>
+<td class="text-center"><p>Multilingual</p></td>
+<td class="text-center"><p>2.51B</p></td>
+<td class="text-center"><p>a cross-encoder model which is suitable for multilingual contexts, performs well in both English proficiency and multilingual capabilities.</p></td>
+<td class="text-center"><p>Gemma2-2B</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><a class="reference external" href="https://huggingface.co/BAAI/bge-reranker-v2-minicpm-layerwise">BAAI/bge-reranker-v2-minicpm-layerwise</a></p></td>
+<td class="text-center"><p>Multilingual</p></td>
+<td class="text-center"><p>2.72B</p></td>
+<td class="text-center"><p>a cross-encoder model which is suitable for multilingual contexts, performs well in both English and Chinese proficiency, allows freedom to select layers for output, facilitating accelerated inference.</p></td>
+<td class="text-center"><p>MiniCPM</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><a class="reference external" href="https://huggingface.co/BAAI/bge-reranker-v2.5-gemma2-lightweight">BAAI/bge-reranker-v2.5-gemma2-lightweight</a></p></td>
+<td class="text-center"><p>Multilingual</p></td>
+<td class="text-center"><p>9.24B</p></td>
+<td class="text-center"><p>a cross-encoder model which is suitable for multilingual contexts, performs well in both English and Chinese proficiency, allows freedom to select layers, compress ratio and compress layers for output, facilitating accelerated inference.</p></td>
+<td class="text-center"><p>Gemma2-9B</p></td>
+</tr>
+<tr class="row-even"><td class="text-left"><p><a class="reference external" href="https://huggingface.co/BAAI/bge-reranker-large">BAAI/bge-reranker-large</a></p></td>
+<td class="text-center"><p>Chinese and English</p></td>
+<td class="text-center"><p>560M</p></td>
+<td class="text-center"><p>a cross-encoder model which is more accurate but less efficient</p></td>
+<td class="text-center"><p>XLM-RoBERTa-Large</p></td>
+</tr>
+<tr class="row-odd"><td class="text-left"><p><a class="reference external" href="https://huggingface.co/BAAI/bge-reranker-base">BAAI/bge-reranker-base</a></p></td>
+<td class="text-center"><p>Chinese and English</p></td>
+<td class="text-center"><p>278M</p></td>
+<td class="text-center"><p>a cross-encoder model which is more accurate but less efficient</p></td>
+<td class="text-center"><p>XLM-RoBERTa-Base</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>First, let’s use a small example to see how reranker works:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">FlagEmbedding</span> <span class="kn">import</span> <span class="n">FlagReranker</span>
+
+<span class="n">reranker</span> <span class="o">=</span> <span class="n">FlagReranker</span><span class="p">(</span><span class="s1">&#39;BAAI/bge-reranker-large&#39;</span><span class="p">,</span> <span class="n">use_fp16</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> 
+<span class="c1"># Setting use_fp16 to True speeds up computation with a slight performance degradation</span>
+
+<span class="c1"># use the compute_score() function to calculate scores for each input sentence pair</span>
+<span class="n">scores</span> <span class="o">=</span> <span class="n">reranker</span><span class="o">.</span><span class="n">compute_score</span><span class="p">([</span>
+    <span class="p">[</span><span class="s1">&#39;what is panda?&#39;</span><span class="p">,</span> <span class="s1">&#39;Today is a sunny day&#39;</span><span class="p">],</span> 
+    <span class="p">[</span><span class="s1">&#39;what is panda?&#39;</span><span class="p">,</span> <span class="s1">&#39;The tiger (Panthera tigris) is a member of the genus Panthera and the largest living cat species native to Asia.&#39;</span><span class="p">],</span>
+    <span class="p">[</span><span class="s1">&#39;what is panda?&#39;</span><span class="p">,</span> <span class="s1">&#39;The giant panda (Ailuropoda melanoleuca), sometimes called a panda bear or simply panda, is a bear species endemic to China.&#39;</span><span class="p">]</span>
+    <span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">scores</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>[-9.474676132202148, -2.823843240737915, 5.76226806640625]
+</pre></div>
+</div>
+</div>
+</div>
+<p>Now, let’s use the reranker to rerank our previously retrieved results:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">new_ids</span><span class="p">,</span> <span class="n">new_scores</span><span class="p">,</span> <span class="n">new_text</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">queries</span><span class="p">)):</span>
+    <span class="c1"># get the new scores of the previously retrieved results</span>
+    <span class="n">new_score</span> <span class="o">=</span> <span class="n">reranker</span><span class="o">.</span><span class="n">compute_score</span><span class="p">([[</span><span class="n">queries</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">text</span><span class="p">]</span> <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">res_text</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+    <span class="c1"># sort the lists of ids and scores by the new scores</span>
+    <span class="n">new_id</span> <span class="o">=</span> <span class="p">[</span><span class="n">tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">tup</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">new_score</span><span class="p">,</span> <span class="n">res_ids</span><span class="p">[</span><span class="n">i</span><span class="p">])),</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)]</span>
+    <span class="n">new_scores</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">new_score</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+    <span class="n">new_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_id</span><span class="p">)</span>
+    <span class="n">new_text</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">corpus</span><span class="p">[</span><span class="n">new_id</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="evaluate">
+<h2>6. Evaluate<a class="headerlink" href="#evaluate" title="Link to this heading">¶</a></h2>
+<p>For details of these metrics, please checkout the tutorial of <a class="reference external" href="https://github.com/FlagOpen/FlagEmbedding/tree/master/Tutorials/4_Evaluation">evaluation</a>.</p>
+<section id="recall">
+<h3>6.1 Recall<a class="headerlink" href="#recall" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">calc_recall</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">truths</span><span class="p">,</span> <span class="n">cutoffs</span><span class="p">):</span>
+    <span class="n">recalls</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cutoffs</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">text</span><span class="p">,</span> <span class="n">truth</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">truths</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cutoffs</span><span class="p">):</span>
+            <span class="n">recall</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">intersect1d</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">text</span><span class="p">[:</span><span class="n">c</span><span class="p">])</span>
+            <span class="n">recalls</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">recall</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">recall</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">truth</span><span class="p">)),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">recalls</span> <span class="o">/=</span> <span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">recalls</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Before reranking:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">recalls_init</span> <span class="o">=</span> <span class="n">calc_recall</span><span class="p">(</span><span class="n">res_text</span><span class="p">,</span> <span class="n">ground_truths</span><span class="p">,</span> <span class="n">cut_offs</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cut_offs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;recall@</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">:</span><span class="se">\t</span><span class="si">{</span><span class="n">recalls_init</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>recall@1:	0.97
+recall@10:	1.0
+</pre></div>
+</div>
+</div>
+</div>
+<p>After reranking:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">recalls_rerank</span> <span class="o">=</span> <span class="n">calc_recall</span><span class="p">(</span><span class="n">new_text</span><span class="p">,</span> <span class="n">ground_truths</span><span class="p">,</span> <span class="n">cut_offs</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cut_offs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;recall@</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">:</span><span class="se">\t</span><span class="si">{</span><span class="n">recalls_rerank</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>recall@1:	0.99
+recall@10:	1.0
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="mrr">
+<h3>6.2 MRR<a class="headerlink" href="#mrr" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">MRR</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">truth</span><span class="p">,</span> <span class="n">cutoffs</span><span class="p">):</span>
+    <span class="n">mrr</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">cutoffs</span><span class="p">))]</span>
+    <span class="k">for</span> <span class="n">pred</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">preds</span><span class="p">,</span> <span class="n">truth</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cutoffs</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">pred</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">c</span> <span class="ow">and</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">t</span><span class="p">:</span>
+                    <span class="n">mrr</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">break</span>
+    <span class="n">mrr</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">mrr</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">mrr</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Before reranking:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mrr_init</span> <span class="o">=</span> <span class="n">MRR</span><span class="p">(</span><span class="n">res_text</span><span class="p">,</span> <span class="n">ground_truths</span><span class="p">,</span> <span class="n">cut_offs</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cut_offs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MRR@</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">:</span><span class="se">\t</span><span class="si">{</span><span class="n">mrr_init</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>MRR@1:	0.97
+MRR@10:	0.9825
+</pre></div>
+</div>
+</div>
+</div>
+<p>After reranking:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">mrr_rerank</span> <span class="o">=</span> <span class="n">MRR</span><span class="p">(</span><span class="n">new_text</span><span class="p">,</span> <span class="n">ground_truths</span><span class="p">,</span> <span class="n">cut_offs</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cut_offs</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;MRR@</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">:</span><span class="se">\t</span><span class="si">{</span><span class="n">mrr_rerank</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>MRR@1:	0.99
+MRR@10:	0.995
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="ndcg">
+<h3>6.3 nDCG<a class="headerlink" href="#ndcg" title="Link to this heading">¶</a></h3>
+<p>Before reranking:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">ndcg_score</span>
+
+<span class="n">pred_hard_encodings</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">pred</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">res_text</span><span class="p">,</span> <span class="n">ground_truths</span><span class="p">):</span>
+    <span class="n">pred_hard_encoding</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+    <span class="n">pred_hard_encodings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_hard_encoding</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cut_offs</span><span class="p">):</span>
+    <span class="n">nDCG</span> <span class="o">=</span> <span class="n">ndcg_score</span><span class="p">(</span><span class="n">pred_hard_encodings</span><span class="p">,</span> <span class="n">res_scores</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nDCG@</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">nDCG</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>nDCG@1: 0.97
+nDCG@10: 0.9869253606521631
+</pre></div>
+</div>
+</div>
+</div>
+<p>After reranking:</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pred_hard_encodings_rerank</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">pred</span><span class="p">,</span> <span class="n">label</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">new_text</span><span class="p">,</span> <span class="n">ground_truths</span><span class="p">):</span>
+    <span class="n">pred_hard_encoding</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">pred</span><span class="p">,</span> <span class="n">label</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">int</span><span class="p">))</span>
+    <span class="n">pred_hard_encodings_rerank</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_hard_encoding</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">c</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cut_offs</span><span class="p">):</span>
+    <span class="n">nDCG</span> <span class="o">=</span> <span class="n">ndcg_score</span><span class="p">(</span><span class="n">pred_hard_encodings_rerank</span><span class="p">,</span> <span class="n">new_scores</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="n">c</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;nDCG@</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">nDCG</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>nDCG@1: 0.99
+nDCG@10: 0.9963092975357145
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="../6_RAG.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">6. RAG</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="../5_Reranking.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">5. Reranking</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, BAAI
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Reranker</a><ul>
+<li><a class="reference internal" href="#setup">0. Setup</a></li>
+<li><a class="reference internal" href="#dataset">1. Dataset</a></li>
+<li><a class="reference internal" href="#embedding">2. Embedding</a></li>
+<li><a class="reference internal" href="#indexing">3. Indexing</a></li>
+<li><a class="reference internal" href="#retrieval">4. Retrieval</a></li>
+<li><a class="reference internal" href="#reranking">5. Reranking</a></li>
+<li><a class="reference internal" href="#evaluate">6. Evaluate</a><ul>
+<li><a class="reference internal" href="#recall">6.1 Recall</a></li>
+<li><a class="reference internal" href="#mrr">6.2 MRR</a></li>
+<li><a class="reference internal" href="#ndcg">6.3 nDCG</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=5929fcd5"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
+    </body>
+</html>
