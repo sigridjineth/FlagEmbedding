@@ -65,23 +65,20 @@ class AbsRerankerModel(ABC, nn.Module):
         """
         pass
 
-    def forward(self, pair: Union[Dict[str, Tensor], List[Dict[str, Tensor]]] = None, teacher_scores: Optional[Tensor] = None):
-        """The computation performed at every call.
+    def forward(self, pair: Union[Dict[str, Tensor], List[Dict[str, Tensor]]] = None,
+                teacher_scores: Optional[Tensor] = None):
+        ranker_logits = self.encode(pair)  # shape: (batch_size * num, 1) 일 수도 있음.
 
-        Args:
-            pair (Union[Dict[str, Tensor], List[Dict[str, Tensor]]], optional): The query-document pair. Defaults to ``None``.
-            teacher_scores (Optional[Tensor], optional): Teacher scores of knowledge distillation. Defaults to None.
+        # squeeze를 통해 (batch_size * group_size,) 형태로 만듦
+        ranker_logits = ranker_logits.squeeze(-1)  # 이제 (batch_size * num) 형태
 
-        Returns:
-            RerankerOutput: Output of reranker model.
-        """
-        ranker_logits = self.encode(pair) # (batch_size * num, dim)
         if teacher_scores is not None:
             teacher_scores = torch.Tensor(teacher_scores)
             teacher_targets = teacher_scores.view(self.train_batch_size, -1)
             teacher_targets = torch.softmax(teacher_targets.detach(), dim=-1)
 
         if self.training:
+            # 이제 (batch_size, group_size) 형태로 reshape
             grouped_logits = ranker_logits.view(self.train_batch_size, -1)
             target = torch.zeros(self.train_batch_size, device=grouped_logits.device, dtype=torch.long)
             loss = self.compute_loss(grouped_logits, target)
@@ -90,7 +87,12 @@ class AbsRerankerModel(ABC, nn.Module):
                 # print(teacher_targets, torch.mean(torch.sum(torch.log_softmax(grouped_logits, dim=-1) * teacher_targets, dim=-1)))
                 loss += - torch.mean(torch.sum(torch.log_softmax(grouped_logits, dim=-1) * teacher_targets, dim=-1))
         else:
+            # 인퍼런스 시에도 reshape
+            ranker_logits = ranker_logits.squeeze(-1)
+            grouped_logits = ranker_logits.view(self.train_batch_size, -1)
             loss = None
+            # scores를 grouped_logits로 반환하거나, grouped_logits를 scores로 교체
+            ranker_logits = grouped_logits
 
         # print(loss)
         return RerankerOutput(

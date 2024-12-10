@@ -33,13 +33,22 @@ class CrossEncoder(nn.Module):
     def forward(self, batch):
         ranker_out: SequenceClassifierOutput = self.hf_model(**batch, return_dict=True)
         logits = ranker_out.logits
+        # logits shape: (batch_size * group_size, 1) 형태일 것임
 
         if self.training:
+            # squeeze를 통해 (batch_size * group_size,) 형태로 만듦
+            logits = logits.squeeze(-1)
+
+            # (batch_size, group_size)로 reshape
             scores = logits.view(
                 self.train_args.per_device_train_batch_size,
                 self.data_args.train_group_size
             )
-            loss = self.cross_entropy(scores, self.target_label)
+
+            # target_label을 모델과 같은 디바이스로 이동
+            target = self.target_label.to(scores.device)
+
+            loss = self.cross_entropy(scores, target)
 
             return SequenceClassifierOutput(
                 loss=loss,

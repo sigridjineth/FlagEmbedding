@@ -30,6 +30,7 @@ class EncoderOnlyRerankerRunner(AbsRerankerRunner):
         )
 
         num_labels = 1
+
         config = AutoConfig.from_pretrained(
             self.model_args.config_name if self.model_args.config_name else self.model_args.model_name_or_path,
             num_labels=num_labels,
@@ -37,6 +38,7 @@ class EncoderOnlyRerankerRunner(AbsRerankerRunner):
             token=self.model_args.token,
             trust_remote_code=self.model_args.trust_remote_code,
         )
+
         logger.info('Config: %s', config)
 
         base_model = AutoModelForSequenceClassification.from_pretrained(
